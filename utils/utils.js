@@ -1,8 +1,26 @@
-const confg = require('./config');
+// utils/utils.js
+const fs = require('fs');
 const sqlite3 = require('sqlite3');
-const db = new sqlite3.Database('./database.sqlite');
 const url = require('url');
+const confg = require('../config');
 
+const checkFileExists = (path) => {
+    try{
+        fs.accessSync(path, fs.constants.F_OK | fs.constants.W_OK);
+        return true;
+    }catch(err){
+        console.log('File Not Found');
+        console.log(err);
+        return false;
+    }
+};
+
+const deleteFile = (path) =>{
+    if(checkFileExists(path)){
+        fs.unlinkSync(path);
+        //console.log("Database Deleted!");
+    }
+};
 
 /**************************************************************
  *   generateHash(): create a random string with 7 characters  *
@@ -13,6 +31,9 @@ const url = require('url');
  *   _ Improve string generation algorithm                     *
  **************************************************************/
 const generateHash = () => {
+    const databasePath = './database/database.sqlite';
+    const db = new sqlite3.Database(databasePath);
+
     const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let hash = '';
     for (let i = 0; i < 7; i++) {
@@ -40,7 +61,6 @@ const assembleShortURL = (hash) => {
     return confg.hostname + '/' + hash;
 };
 
-
 /*************************************************************
  *  dateSetUp(): return an object containing the creation    *
  *  date (current date) and the expirarion date (one month)  *
@@ -54,13 +74,9 @@ const dateSetUp = () => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-    const creationDate = `${day}/${month > 12 ? 0 : month}/${year}`;
-    const expirationDate = `${day}/${month + 1 > 12 ? month + 1 : 1}/${year}`;
-    return {
-        creationDate: creationDate,
-        expirationDate: expirationDate
-    };
+    return  `${day}/${month > 12 ? 0 : month}/${year}`;    
 };
+
 
 /*************************************************************
  *  validateURL(<string>): recieve a URL string and perform  *
@@ -78,9 +94,21 @@ const validateURL = (urlString) => {
     }
 };
 
+const assembleDatabaseEntry = (originalURL) => {
+    return {
+        baseURL: originalURL,
+        hash: generateHash(),
+        creationDate: dateSetUp()
+    };
+};
+
+
 module.exports = {
+    checkFileExists: checkFileExists,
+    deleteFile: deleteFile,
     generateHash: generateHash,
     assembleShortURL: assembleShortURL,
     dateSetUp: dateSetUp,
-    validateURL: validateURL
+    validateURL: validateURL,
+    assembleDatabaseEntry: assembleDatabaseEntry
 };
