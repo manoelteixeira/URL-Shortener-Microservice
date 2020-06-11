@@ -8,17 +8,23 @@ const {
     checkFileExists
 } = require('../utils/utils');
 
- 
 
-// This script will initialize a sqlite3 database and it will create a table to hold the url information
+// db.serialize(() => {
+//     db.run('DROP TABLE IF EXISTS `url`;');
+//     db.run(
+//         'CREATE TABLE IF NOT EXISTS `url`(' +
+//         '`id` INTEGER NOT NULL, ' +
+//         '`base_url` TEXT NOT NULL, ' +
+//         '`hash` TEXT UNIQUE NOT NULL, ' +
+//         '`creation_date` TEXT NOT NULL, ' +
+//         'PRIMARY KEY(`id`) );');
+// });
 
-const setupDatabase = () => {
-    
-    const db = new sqlite3.Database(databasePath);
-    db.serialize(() => {
-        db.run('DROP TABLE IF EXISTS `url`;');
-    
-        db.run(
+
+const createTabe = (database) => {
+    database.serialize(function(){
+        database.run('DROP TABLE IF EXISTS `url`;');
+        database.run(
             'CREATE TABLE IF NOT EXISTS `url`(' +
             '`id` INTEGER NOT NULL, ' +
             '`base_url` TEXT NOT NULL, ' +
@@ -28,52 +34,60 @@ const setupDatabase = () => {
     });
 };
 
-
-const  databaseSchema = [
-    {"cid":0,"name":"id","type":"INTEGER","notnull":1,"dflt_value":null,"pk":1},
-    {"cid":1,"name":"base_url","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
-    {"cid":2,"name":"hash","type":"TEXT","notnull":1,"dflt_value":null,"pk":0},
-    {"cid":3,"name":"creation_date","type":"TEXT","notnull":1,"dflt_value":null,"pk":0}
-];
-
-const checkDatabase = async () => {
-    if(checkFileExists('./database/database.sqlite')){
-        const db = new sqlite3.Database(databasePath);
-        //Check if table url exists
-        const query = "SELECT name FROM sqlite_master WHERE type='table' AND name='url';";
-        db.get(query,(err, row) => {
-            //Check if table url exists
+const setupDatabase = () => {
+    
+    if(!checkFileExists(databasePath)){
+        //Database file don't exist
+        const db = new sqlite3.Database(databasePath,(err) => {
             if(err){
+                console.log('OPS!! Something went wrong!');
                 console.error(err);
-            }else{
-                if(row){
-                    const query = "PRAGMA table_info('url');";
-                    db.all(query, (err, data) => {
-                        if(JSON.stringify(databaseSchema) !== JSON.stringify(data)){
-                            setupDatabase();
-                        }else{
-                            console.log('Database OK.');
-                        }
-                    });
-                }else{ 
-                    // url table is not setup
-                    setupDatabase();
-                    
-                }
             }
         });
-    }else {
-        //database file not found
-       console.log('Setting up new database');
-        setupDatabase();
+        createTabe(db);
+        db.close((err) => {
+            if(err){
+                console.log('OPS!! Something went wrong!');
+                console.error(err);
+            }
+        });
+
+    }else{
+        //Database file exist
+        
+        const db = new sqlite3.Database(databasePath,(err) => {
+            if(err){
+                console.log('OPS!! Something went wrong!');
+                console.error(err);
+            }
+        });
+
+        const urlTableQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='url';";
+        db.get(urlTableQuery, (err, data) => {
+            if(err){
+                console.error(err);
+                //throw err;
+            }else if(!data || data.name !== 'url'){
+                createTabe(db);
+            }
+            db.close((err) => {
+            if(err){
+                console.log('OPS!! Something went wrong!');
+                console.error(err);
+            }
+        });
+        });
     }
 };
 
 
 
+
+
+
+
 module.exports = {
-    databaseSchema: databaseSchema,
-    setupDatabase: setupDatabase,
-    checkDatabase: checkDatabase
+    createTabe: createTabe,
+    setupDatabase: setupDatabase
 };
 

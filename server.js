@@ -7,9 +7,9 @@ const bodyParser = require('body-parser');
 const config = require('./config');
 const express = require('express');
 
-const {checkDatabase} = require('./database/database');
+const {setupDatabase} = require('./database/database');
 
-checkDatabase();
+
 
 const app = express();
 const PORT = config.PORT;
@@ -25,9 +25,12 @@ const apiRouter = require('./routes/api');
 app.use('/', apiRouter);
 
 
+setupDatabase();
 
 app.listen(PORT, () => {
+
     console.log(`Server Running on PORT: ${PORT}.`);
 });
+
 
 module.exports = app;

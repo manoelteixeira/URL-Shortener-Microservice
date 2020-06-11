@@ -12,6 +12,26 @@ const {
     assembleShortURL
 } = require('../utils/utils');
 
+apiRouter.param('hash', (req, res, next, hash) => {
+    db.get(`SELECT * FROM url WHERE url.hash = '${hash}';`, (error, url) => {
+        if (error) {
+            next(error);
+        } else if (url) {
+            req.url = url;
+            next();
+        } else {
+            res.sendStatus(404);
+        }
+        //console.log(url);
+    });
+});
+
+// REDIRECT To the original URL
+apiRouter.get('/:hash', (req, res, next) => {
+    const baseURL = req.url.base_url;
+    res.redirect(301, baseURL);
+});
+
 
 // POST - Create a new short url
 apiRouter.post('/api/shorturl/', (req, res, next) => {
@@ -56,19 +76,13 @@ apiRouter.post('/api/shorturl/', (req, res, next) => {
     }
 });
 
-// GET - Retrieve the original url 
-apiRouter.get('/api/shorturl/:hash', (req, res, next) => {
-    const url = {
-        originalURL: req.url.base_url,
-        creationDate: req.url.creation_date,
-        expirationDate: req.url.expiration_date
-    };
 
+apiRouter.get('/api/shorturl/:hash', (req, res, next) => {
     res.status(200).json({
-        url: url
+        'originalURL': req.url.base_url,
+        'creationDate': req.url.creation_date,
     });
 });
-
 
 
 module.exports = apiRouter;

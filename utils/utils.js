@@ -4,32 +4,26 @@ const sqlite3 = require('sqlite3');
 const url = require('url');
 const confg = require('../config');
 
+
 const checkFileExists = (path) => {
     try{
         fs.accessSync(path, fs.constants.F_OK | fs.constants.W_OK);
         return true;
     }catch(err){
-        console.log('File Not Found');
-        console.log(err);
         return false;
     }
 };
 
 const deleteFile = (path) =>{
     if(checkFileExists(path)){
+        console.log(`Deleting file: ${path}`);
         fs.unlinkSync(path);
-        //console.log("Database Deleted!");
+    }else{
+        console.log(`file: ${path} does not exist`);
     }
 };
 
-/**************************************************************
- *   generateHash(): create a random string with 7 characters  *
- *   and check in the data base to see if its unique.          *
- *   FUTURE IMPROVEMENTS:                                      *
- *   - Reduce the number of database acess                     *
- *   - Remove the recursion                                    *
- *   _ Improve string generation algorithm                     *
- **************************************************************/
+
 const generateHash = () => {
     const databasePath = './database/database.sqlite';
     const db = new sqlite3.Database(databasePath);
@@ -52,23 +46,12 @@ const generateHash = () => {
     return hash;
 };
 
-/*************************************************************
- *  assembleShortURL(<string>): receieve a hash string  and  *
- *  uses the hostname from the config.js file to assmble     *
- *  the shortened string                                     *
- ************************************************************/
+
 const assembleShortURL = (hash) => {
     return confg.hostname + '/' + hash;
 };
 
-/*************************************************************
- *  dateSetUp(): return an object containing the creation    *
- *  date (current date) and the expirarion date (one month)  *
- *  FUTURE IMPROVEMENTS:                                     *
- *  - Fix the algorithm in order to set the expirarion date  *
- *    exacly one month from the creation date (Currently it  *
- *    only increment the month by 1).                        *
- ************************************************************/
+
 const dateSetUp = () => {
     const date = new Date();
     const day = date.getDate();
@@ -78,12 +61,6 @@ const dateSetUp = () => {
 };
 
 
-/*************************************************************
- *  validateURL(<string>): recieve a URL string and perform  *
- *  a DNS Resolve to see if the URL given is a valid URL and *
- *  if it leads to and existing web site. It returns true    *
- *  if the URL is valid or False otherwise                   *
- ************************************************************/
 const validateURL = (urlString) => {
     const givenURL = url.parse(urlString);
     //console.log(givenURL);
