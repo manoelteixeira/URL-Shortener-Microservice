@@ -15,7 +15,7 @@ To use it just: `npm install`.
 This project is based on SQLite3.
 
 - Data base scheeme:
-    Table Name: `url`.
+    -  Table Name: `url`.
     |LABEL           |TYPE     |CONSTRAINTS         |
     |----------------|---------|--------------------|
     |id              |INTEGER  |PRIMARY KEY NOT NULL|
