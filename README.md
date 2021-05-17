@@ -16,12 +16,12 @@ This project is based on SQLite3.
 
 - Data base scheeme:
     -  Table Name: `url`.
-    |LABEL           |TYPE     |CONSTRAINTS         |
-    |----------------|---------|--------------------|
-    |id              |INTEGER  |PRIMARY KEY NOT NULL|
-    |long_url        |TEXT     |NOT NULL            |
-    |hash            |TEXT     |UNIQUE NOT NULL     |
-    |creation_date   |TEXT     |NOT NULL            |
+|LABEL           |TYPE     |CONSTRAINTS         |
+|----------------|---------|--------------------|
+|id              |INTEGER  |PRIMARY KEY NOT NULL|
+|long_url        |TEXT     |NOT NULL            |
+|hash            |TEXT     |UNIQUE NOT NULL     |
+|creation_date   |TEXT     |NOT NULL            |
     
 ## **Furute improvements:**
 
